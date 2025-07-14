@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Time Dashboard</title>
+    <title>WakaTime Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,209 +14,217 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1a1f2e;
+            background: #1a1a1a;
             color: #ffffff;
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
         }
 
         .header {
+            background: #2d2d2d;
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            font-weight: 300;
-            color: #ffffff;
+            border-bottom: 1px solid #404040;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.5em;
+            font-size: 16px;
             font-weight: 600;
-            color: #4fc3f7;
         }
 
         .logo::before {
-            content: "🐾";
-            font-size: 1.2em;
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: #4a9eff;
+            border-radius: 50%;
+            margin-right: 8px;
         }
 
-        .filter-btn {
-            background: #2a3441;
-            border: 2px solid #4fc3f7;
-            color: #4fc3f7;
-            padding: 10px 20px;
-            border-radius: 8px;
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .upgrade-btn {
+            background: #4a9eff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
             cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
         }
 
-        .filter-btn:hover {
-            background: #4fc3f7;
-            color: #1a1f2e;
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 60px);
         }
 
-        .today-stats {
-            background: #2a3441;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid #3a4553;
+        .sidebar {
+            width: 200px;
+            background: #2d2d2d;
+            padding: 20px 0;
+            border-right: 1px solid #404040;
         }
 
-        .today-stats h2 {
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            color: #ffffff;
-            font-weight: 500;
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+        }
+
+        .sidebar li:first-child {
+            border-left-color: #4a9eff;
+            background: #333;
+        }
+
+        .sidebar li:hover {
+            background: #333;
+        }
+
+        .content {
+            flex: 1;
+            padding: 24px;
+        }
+
+        .time-summary {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .time-text {
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .time-number {
+            font-weight: 600;
+            color: #4a9eff;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-container {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ccc;
+        }
+
+        .chart-time {
+            font-size: 12px;
+            color: #888;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-label {
-            font-size: 1.1em;
-            color: #8a95a5;
-            margin-bottom: 10px;
-        }
-
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .stat-subtext {
-            font-size: 0.9em;
-            color: #8a95a5;
-            margin-top: 5px;
-        }
-
-        .week-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .tab {
-            background: #2a3441;
-            border: none;
-            color: #8a95a5;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            background: #4fc3f7;
-            color: #1a1f2e;
-        }
-
-        .see-previous {
-            background: #2a3441;
-            border: 2px solid #4fc3f7;
-            color: #4fc3f7;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            margin-left: auto;
-        }
-
-        .weekly-summary {
-            background: #2a3441;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid #3a4553;
-        }
-
-        .weekly-summary h2 {
-            font-size: 1.3em;
-            margin-bottom: 25px;
-            color: #ffffff;
-            font-weight: 500;
-        }
-
-        .summary-grid {
-            display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 30px;
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
-        .summary-item {
-            text-align: left;
+        .stat-card {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
         }
 
-        .summary-item h3 {
-            font-size: 1.1em;
-            color: #8a95a5;
-            margin-bottom: 10px;
-            font-weight: 500;
+        .stat-title {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 16px;
         }
 
-        .summary-value {
-            font-size: 2em;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 5px;
+        .donut-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
         }
 
-        .summary-subtext {
-            font-size: 0.9em;
-            color: #8a95a5;
+        .projects-section {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
         }
 
-        .chart-container {
-            background: #2a3441;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid #3a4553;
+        .projects-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ccc;
         }
 
-        .chart-title {
-            font-size: 1.3em;
-            margin-bottom: 25px;
-            color: #ffffff;
-            font-weight: 500;
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
         }
 
-        .chart-legend {
+        .project-card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #404040;
+        }
+
+        .project-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-time {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .legend {
             display: flex;
-            gap: 30px;
-            margin-bottom: 30px;
             flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
-            color: #8a95a5;
+            gap: 6px;
+            font-size: 12px;
         }
 
         .legend-color {
@@ -224,353 +233,398 @@
             border-radius: 2px;
         }
 
-        .chart-area {
-            position: relative;
+        .weekdays-chart {
             height: 200px;
-            background: #1a1f2e;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            margin-top: 16px;
         }
 
-        .chart-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                linear-gradient(to right, #3a4553 1px, transparent 1px),
-                linear-gradient(to bottom, #3a4553 1px, transparent 1px);
-            background-size: 50px 40px;
-            opacity: 0.3;
-        }
-
-        .y-axis-label {
-            position: absolute;
-            left: 10px;
-            top: 20px;
-            font-size: 0.8em;
-            color: #8a95a5;
-        }
-
-        .x-axis {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .day-label {
-            font-size: 0.9em;
-            color: #8a95a5;
-            text-align: center;
-            flex: 1;
-        }
-
-        .daily-bars {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            height: 160px;
+        .gauge-container {
             position: relative;
-            z-index: 1;
-            margin-top: 20px;
+            width: 150px;
+            height: 100px;
+            margin: 0 auto 16px;
         }
 
-        .day-bar {
-            width: 60px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
+        .gauge-text {
+            text-align: center;
+            margin-top: 8px;
         }
 
-        .bar {
-            width: 100%;
-            border-radius: 3px 3px 0 0;
-            transition: all 0.3s ease;
-        }
-
-        .bar:hover {
-            opacity: 0.8;
-        }
-
-        .code-time-bar {
-            background: #4a5568;
-        }
-
-        .active-code-bar {
-            background: #4fc3f7;
-        }
-
-        .flow-time-bar {
-            background: #9f7aea;
-        }
-
-        .projects-breakdown {
-            background: #2a3441;
-            border-radius: 12px;
-            padding: 30px;
-            border: 1px solid #3a4553;
-        }
-
-        .projects-breakdown h2 {
-            font-size: 1.3em;
-            margin-bottom: 25px;
-            color: #ffffff;
-            font-weight: 500;
-        }
-
-        .project-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #3a4553;
-        }
-
-        .project-item:last-child {
-            border-bottom: none;
-        }
-
-        .project-name {
-            font-size: 1em;
-            color: #ffffff;
-            font-weight: 500;
-        }
-
-        .project-time {
-            font-size: 1em;
-            color: #4fc3f7;
+        .gauge-value {
+            font-size: 18px;
             font-weight: 600;
         }
 
-        .project-progress {
-            width: 100%;
-            height: 6px;
-            background: #3a4553;
-            border-radius: 3px;
-            margin-top: 8px;
-            overflow: hidden;
+        .gauge-label {
+            font-size: 12px;
+            color: #888;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4fc3f7, #81c784);
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-
-        .percentage {
-            font-size: 0.9em;
-            color: #8a95a5;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 768px) {
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 20px;
-            }
+        .activity-chart {
+            height: 200px;
+            margin-top: 16px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Code Time Dashboard</h1>
-            <div class="logo">Software</div>
-            <button class="filter-btn">Filter by projects</button>
+    <div class="header">
+        <div class="logo">WakaTime</div>
+        <div class="header-right">
+            <button class="upgrade-btn">Upgrade</button>
+            <span>Dashboard</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <ul>
+                <li>Dashboard</li>
+                <li>Sapmate</li>
+                <li>Projects</li>
+                <li>Insights</li>
+                <li>Reports</li>
+                <li>Invoices</li>
+                <li>Goals</li>
+                <li>Shareables</li>
+                <li>Leaderboards</li>
+                <li>Integrations</li>
+                <li>Supported IDEs</li>
+            </ul>
         </div>
 
-        <div class="today-stats">
-            <h2>Today's Stats</h2>
+        <div class="content">
+            <div class="time-summary">
+                <div class="time-text">
+                    <span class="time-number">37 hrs 26 mins</span> over the Last 7 Days
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-time">5 mins Today</div>
+                    </div>
+                    <div class="activity-chart">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-time">5 mins Today</div>
+                    </div>
+                    <div class="weekdays-chart">
+                        <canvas id="weekdaysChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-label">Code Time</div>
-                    <div class="stat-value">6h 12m</div>
-                    <div class="stat-subtext">spent in your editor</div>
+                <div class="stat-card">
+                    <div class="stat-title">Editors</div>
+                    <div class="donut-container">
+                        <canvas id="editorsChart"></canvas>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4a9eff;"></div>
+                            <span>VS Code - 36h 26m (100.00%)</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Active Code Time</div>
-                    <div class="stat-value">4h 45m</div>
-                    <div class="stat-subtext">writing code</div>
-                </div>
-            </div>
-        </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <div class="week-tabs">
-                <button class="tab">Last week</button>
-                <button class="tab active">This week</button>
-            </div>
-            <button class="see-previous">See previous weeks</button>
-        </div>
+                <div class="stat-card">
+                    <div class="stat-title">Languages</div>
+                    <div class="donut-container">
+                        <canvas id="languagesChart"></canvas>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff6b6b;"></div>
+                            <span>JavaScript - 15h 30m (41.4%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4ecdc4;"></div>
+                            <span>TypeScript - 12h 45m (34.1%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #45b7d1;"></div>
+                            <span>HTML - 5h 11m (13.9%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f9ca24;"></div>
+                            <span>CSS - 2h 50m (7.6%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #6c5ce7;"></div>
+                            <span>Python - 1h 10m (3.0%)</span>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="weekly-summary">
-            <h2>Weekly Summary (July 7 - July 14, 2025)</h2>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <h3>Code Time</h3>
-                    <div class="summary-value">41h 12m</div>
-                    <div class="summary-subtext">Daily average: 5h 53m</div>
+                <div class="stat-card">
+                    <div class="stat-title">Operating Systems</div>
+                    <div class="donut-container">
+                        <canvas id="osChart"></canvas>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4a9eff;"></div>
+                            <span>Windows - 37h 26m (100.00%)</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="summary-item">
-                    <h3>Active Code Time</h3>
-                    <div class="summary-value">27h 30m</div>
-                    <div class="summary-subtext">Daily average: 3h 56m</div>
-                </div>
-                <div class="summary-item">
-                    <h3>Coding at Work</h3>
-                    <div class="summary-value">89%</div>
-                    <div class="summary-subtext">of total coding during work hours</div>
-                </div>
-                <div class="summary-item">
-                    <h3>Meeting Time</h3>
-                    <div class="summary-value">2h 15m</div>
-                    <div class="summary-subtext">Daily average: 19m</div>
-                </div>
-            </div>
-        </div>
 
-        <div class="chart-container">
-            <h2 class="chart-title">Daily Active Code Time</h2>
-            <div class="chart-legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #4a5568;"></div>
-                    <span>Code Time</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #4fc3f7;"></div>
-                    <span>Active Code Time</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #9f7aea;"></div>
-                    <span>Flow Time</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #f6ad55;"></div>
-                    <span>Your 90-day avg</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #48bb78;"></div>
-                    <span>Global 90-day avg</span>
-                </div>
-            </div>
-            <div class="chart-area">
-                <div class="chart-grid"></div>
-                <div class="y-axis-label">8h</div>
-                <div class="daily-bars">
-                    <div class="day-bar">
-                        <div class="bar flow-time-bar" style="height: 45px;"></div>
-                        <div class="bar active-code-bar" style="height: 80px;"></div>
-                        <div class="bar code-time-bar" style="height: 100px;"></div>
+                <div class="stat-card">
+                    <div class="stat-title">Machines</div>
+                    <div class="donut-container">
+                        <canvas id="machinesChart"></canvas>
                     </div>
-                    <div class="day-bar">
-                        <div class="bar flow-time-bar" style="height: 35px;"></div>
-                        <div class="bar active-code-bar" style="height: 70px;"></div>
-                        <div class="bar code-time-bar" style="height: 90px;"></div>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar flow-time-bar" style="height: 55px;"></div>
-                        <div class="bar active-code-bar" style="height: 95px;"></div>
-                        <div class="bar code-time-bar" style="height: 120px;"></div>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar flow-time-bar" style="height: 40px;"></div>
-                        <div class="bar active-code-bar" style="height: 85px;"></div>
-                        <div class="bar code-time-bar" style="height: 110px;"></div>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar flow-time-bar" style="height: 50px;"></div>
-                        <div class="bar active-code-bar" style="height: 90px;"></div>
-                        <div class="bar code-time-bar" style="height: 115px;"></div>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar flow-time-bar" style="height: 30px;"></div>
-                        <div class="bar active-code-bar" style="height: 60px;"></div>
-                        <div class="bar code-time-bar" style="height: 80px;"></div>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar flow-time-bar" style="height: 25px;"></div>
-                        <div class="bar active-code-bar" style="height: 45px;"></div>
-                        <div class="bar code-time-bar" style="height: 65px;"></div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4a9eff;"></div>
+                            <span>Parameeta - 37h 26m (100.00%)</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="x-axis">
-                <div class="day-label">Mon</div>
-                <div class="day-label">Tue</div>
-                <div class="day-label">Wed</div>
-                <div class="day-label">Thu</div>
-                <div class="day-label">Fri</div>
-                <div class="day-label">Sat</div>
-                <div class="day-label">Sun</div>
-            </div>
-        </div>
 
-        <div class="projects-breakdown">
-            <h2>Projects Breakdown</h2>
-            <div class="project-item">
-                <div>
-                    <div class="project-name">Sapmate Learning App</div>
-                    <div class="project-progress">
-                        <div class="progress-fill" style="width: 39.5%;"></div>
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-time">5 mins Today</div>
                     </div>
-                    <div class="percentage">39.5% • 16h 17m</div>
+                    <div class="gauge-container">
+                        <canvas id="gaugeChart"></canvas>
+                    </div>
+                    <div class="gauge-text">
+                        <div class="gauge-value">5h 21m</div>
+                        <div class="gauge-label">Daily Average</div>
+                        <div class="gauge-label">Sat Jul 13th Most Active Day</div>
+                    </div>
                 </div>
-                <div class="project-time">16h 17m</div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Weekdays</div>
+                    </div>
+                    <div class="weekdays-chart">
+                        <canvas id="weekdaysBarChart"></canvas>
+                    </div>
+                </div>
             </div>
-            <div class="project-item">
-                <div>
-                    <div class="project-name">Sapmate Learning Web</div>
-                    <div class="project-progress">
-                        <div class="progress-fill" style="width: 27.2%;"></div>
+
+            <div class="projects-section">
+                <div class="projects-header">Projects</div>
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-name">Sapmate-learning-app</div>
+                        <div class="project-time">16 hrs 17 mins</div>
                     </div>
-                    <div class="percentage">27.2% • 11h 12m</div>
-                </div>
-                <div class="project-time">11h 12m</div>
-            </div>
-            <div class="project-item">
-                <div>
-                    <div class="project-name">Alkaa Frontend</div>
-                    <div class="project-progress">
-                        <div class="progress-fill" style="width: 26.5%;"></div>
+                    <div class="project-card">
+                        <div class="project-name">Sapmate-learning-web</div>
+                        <div class="project-time">11 hrs 9 mins</div>
                     </div>
-                    <div class="percentage">26.5% • 10h 58m</div>
-                </div>
-                <div class="project-time">10h 58m</div>
-            </div>
-            <div class="project-item">
-                <div>
-                    <div class="project-name">Alkaa Backend</div>
-                    <div class="project-progress">
-                        <div class="progress-fill" style="width: 24.0%;"></div>
+                    <div class="project-card">
+                        <div class="project-name">Alkaa-Frontend</div>
+                        <div class="project-time">10 hrs 58 mins</div>
                     </div>
-                    <div class="percentage">24.0% • 9h 54m</div>
-                </div>
-                <div class="project-time">9h 54m</div>
-            </div>
-            <div class="project-item">
-                <div>
-                    <div class="project-name">Sapmate Main Website</div>
-                    <div class="project-progress">
-                        <div class="progress-fill" style="width: 4.9%;"></div>
+                    <div class="project-card">
+                        <div class="project-name">Alkaa-Backend</div>
+                        <div class="project-time">9 hrs 24 mins</div>
                     </div>
-                    <div class="percentage">4.9% • 2h 00m</div>
+                    <div class="project-card">
+                        <div class="project-name">Sapmate-main-website</div>
+                        <div class="project-time">2 hrs</div>
+                    </div>
                 </div>
-                <div class="project-time">2h 00m</div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Common chart configuration
+        const commonConfig = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        };
+
+        // Activity Chart (Line chart with areas)
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        new Chart(activityCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 24}, (_, i) => i),
+                datasets: [{
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 8, 5, 7, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0],
+                    borderColor: '#4a9eff',
+                    backgroundColor: 'rgba(74, 158, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                ...commonConfig,
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Weekdays Chart
+        const weekdaysCtx = document.getElementById('weekdaysChart').getContext('2d');
+        new Chart(weekdaysCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    data: [4, 6, 3, 8, 7, 9, 5],
+                    backgroundColor: '#4a9eff'
+                }]
+            },
+            options: {
+                ...commonConfig,
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#888'
+                        }
+                    },
+                    y: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Editors Donut Chart
+        const editorsCtx = document.getElementById('editorsChart').getContext('2d');
+        new Chart(editorsCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [100],
+                    backgroundColor: ['#4a9eff'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...commonConfig,
+                cutout: '60%'
+            }
+        });
+
+        // Languages Donut Chart
+        const languagesCtx = document.getElementById('languagesChart').getContext('2d');
+        new Chart(languagesCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [41.4, 34.1, 13.9, 7.6, 3.0],
+                    backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...commonConfig,
+                cutout: '60%'
+            }
+        });
+
+        // OS Donut Chart
+        const osCtx = document.getElementById('osChart').getContext('2d');
+        new Chart(osCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [100],
+                    backgroundColor: ['#4a9eff'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...commonConfig,
+                cutout: '60%'
+            }
+        });
+
+        // Machines Donut Chart
+        const machinesCtx = document.getElementById('machinesChart').getContext('2d');
+        new Chart(machinesCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [100],
+                    backgroundColor: ['#4a9eff'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...commonConfig,
+                cutout: '60%'
+            }
+        });
+
+        // Gauge Chart
+        const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
+        new Chart(gaugeCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [75, 25],
+                    backgroundColor: ['#ff6b6b', '#333'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...commonConfig,
+                cutout: '70%',
+                rotation: -90,
+                circumference: 180
+            }
+        });
+
+        // Weekdays Bar Chart
+        const weekdaysBarCtx = document.getElementById('weekdaysBarChart').getContext('2d');
+        new Chart(weekdaysBarCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                datasets: [{
+                    data: [4, 6, 3, 8, 7, 9, 5],
+                    backgroundColor: '#4a9eff'
+                }]
+            },
+            options: {
+                ...commonConfig,
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#888'
+                        }
+                    },
+                    y: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
