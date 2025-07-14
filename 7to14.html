@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Time Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1f2e;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            color: #ffffff;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #4fc3f7;
+        }
+
+        .logo::before {
+            content: "🐾";
+            font-size: 1.2em;
+        }
+
+        .filter-btn {
+            background: #2a3441;
+            border: 2px solid #4fc3f7;
+            color: #4fc3f7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #4fc3f7;
+            color: #1a1f2e;
+        }
+
+        .today-stats {
+            background: #2a3441;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #3a4553;
+        }
+
+        .today-stats h2 {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: #8a95a5;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .stat-subtext {
+            font-size: 0.9em;
+            color: #8a95a5;
+            margin-top: 5px;
+        }
+
+        .week-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            background: #2a3441;
+            border: none;
+            color: #8a95a5;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #4fc3f7;
+            color: #1a1f2e;
+        }
+
+        .see-previous {
+            background: #2a3441;
+            border: 2px solid #4fc3f7;
+            color: #4fc3f7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .weekly-summary {
+            background: #2a3441;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #3a4553;
+        }
+
+        .weekly-summary h2 {
+            font-size: 1.3em;
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .summary-item {
+            text-align: left;
+        }
+
+        .summary-item h3 {
+            font-size: 1.1em;
+            color: #8a95a5;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .summary-subtext {
+            font-size: 0.9em;
+            color: #8a95a5;
+        }
+
+        .chart-container {
+            background: #2a3441;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #3a4553;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            color: #8a95a5;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .chart-area {
+            position: relative;
+            height: 200px;
+            background: #1a1f2e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(to right, #3a4553 1px, transparent 1px),
+                linear-gradient(to bottom, #3a4553 1px, transparent 1px);
+            background-size: 50px 40px;
+            opacity: 0.3;
+        }
+
+        .y-axis-label {
+            position: absolute;
+            left: 10px;
+            top: 20px;
+            font-size: 0.8em;
+            color: #8a95a5;
+        }
+
+        .x-axis {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .day-label {
+            font-size: 0.9em;
+            color: #8a95a5;
+            text-align: center;
+            flex: 1;
+        }
+
+        .daily-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 160px;
+            position: relative;
+            z-index: 1;
+            margin-top: 20px;
+        }
+
+        .day-bar {
+            width: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .bar {
+            width: 100%;
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+        }
+
+        .code-time-bar {
+            background: #4a5568;
+        }
+
+        .active-code-bar {
+            background: #4fc3f7;
+        }
+
+        .flow-time-bar {
+            background: #9f7aea;
+        }
+
+        .projects-breakdown {
+            background: #2a3441;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #3a4553;
+        }
+
+        .projects-breakdown h2 {
+            font-size: 1.3em;
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .project-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #3a4553;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-name {
+            font-size: 1em;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .project-time {
+            font-size: 1em;
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+
+        .project-progress {
+            width: 100%;
+            height: 6px;
+            background: #3a4553;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #81c784);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .percentage {
+            font-size: 0.9em;
+            color: #8a95a5;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Code Time Dashboard</h1>
+            <div class="logo">Software</div>
+            <button class="filter-btn">Filter by projects</button>
+        </div>
+
+        <div class="today-stats">
+            <h2>Today's Stats</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Code Time</div>
+                    <div class="stat-value">6h 12m</div>
+                    <div class="stat-subtext">spent in your editor</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Active Code Time</div>
+                    <div class="stat-value">4h 45m</div>
+                    <div class="stat-subtext">writing code</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div class="week-tabs">
+                <button class="tab">Last week</button>
+                <button class="tab active">This week</button>
+            </div>
+            <button class="see-previous">See previous weeks</button>
+        </div>
+
+        <div class="weekly-summary">
+            <h2>Weekly Summary (July 7 - July 14, 2025)</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h3>Code Time</h3>
+                    <div class="summary-value">41h 12m</div>
+                    <div class="summary-subtext">Daily average: 5h 53m</div>
+                </div>
+                <div class="summary-item">
+                    <h3>Active Code Time</h3>
+                    <div class="summary-value">27h 30m</div>
+                    <div class="summary-subtext">Daily average: 3h 56m</div>
+                </div>
+                <div class="summary-item">
+                    <h3>Coding at Work</h3>
+                    <div class="summary-value">89%</div>
+                    <div class="summary-subtext">of total coding during work hours</div>
+                </div>
+                <div class="summary-item">
+                    <h3>Meeting Time</h3>
+                    <div class="summary-value">2h 15m</div>
+                    <div class="summary-subtext">Daily average: 19m</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 class="chart-title">Daily Active Code Time</h2>
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4a5568;"></div>
+                    <span>Code Time</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4fc3f7;"></div>
+                    <span>Active Code Time</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9f7aea;"></div>
+                    <span>Flow Time</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f6ad55;"></div>
+                    <span>Your 90-day avg</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #48bb78;"></div>
+                    <span>Global 90-day avg</span>
+                </div>
+            </div>
+            <div class="chart-area">
+                <div class="chart-grid"></div>
+                <div class="y-axis-label">8h</div>
+                <div class="daily-bars">
+                    <div class="day-bar">
+                        <div class="bar flow-time-bar" style="height: 45px;"></div>
+                        <div class="bar active-code-bar" style="height: 80px;"></div>
+                        <div class="bar code-time-bar" style="height: 100px;"></div>
+                    </div>
+                    <div class="day-bar">
+                        <div class="bar flow-time-bar" style="height: 35px;"></div>
+                        <div class="bar active-code-bar" style="height: 70px;"></div>
+                        <div class="bar code-time-bar" style="height: 90px;"></div>
+                    </div>
+                    <div class="day-bar">
+                        <div class="bar flow-time-bar" style="height: 55px;"></div>
+                        <div class="bar active-code-bar" style="height: 95px;"></div>
+                        <div class="bar code-time-bar" style="height: 120px;"></div>
+                    </div>
+                    <div class="day-bar">
+                        <div class="bar flow-time-bar" style="height: 40px;"></div>
+                        <div class="bar active-code-bar" style="height: 85px;"></div>
+                        <div class="bar code-time-bar" style="height: 110px;"></div>
+                    </div>
+                    <div class="day-bar">
+                        <div class="bar flow-time-bar" style="height: 50px;"></div>
+                        <div class="bar active-code-bar" style="height: 90px;"></div>
+                        <div class="bar code-time-bar" style="height: 115px;"></div>
+                    </div>
+                    <div class="day-bar">
+                        <div class="bar flow-time-bar" style="height: 30px;"></div>
+                        <div class="bar active-code-bar" style="height: 60px;"></div>
+                        <div class="bar code-time-bar" style="height: 80px;"></div>
+                    </div>
+                    <div class="day-bar">
+                        <div class="bar flow-time-bar" style="height: 25px;"></div>
+                        <div class="bar active-code-bar" style="height: 45px;"></div>
+                        <div class="bar code-time-bar" style="height: 65px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="x-axis">
+                <div class="day-label">Mon</div>
+                <div class="day-label">Tue</div>
+                <div class="day-label">Wed</div>
+                <div class="day-label">Thu</div>
+                <div class="day-label">Fri</div>
+                <div class="day-label">Sat</div>
+                <div class="day-label">Sun</div>
+            </div>
+        </div>
+
+        <div class="projects-breakdown">
+            <h2>Projects Breakdown</h2>
+            <div class="project-item">
+                <div>
+                    <div class="project-name">Sapmate Learning App</div>
+                    <div class="project-progress">
+                        <div class="progress-fill" style="width: 39.5%;"></div>
+                    </div>
+                    <div class="percentage">39.5% • 16h 17m</div>
+                </div>
+                <div class="project-time">16h 17m</div>
+            </div>
+            <div class="project-item">
+                <div>
+                    <div class="project-name">Sapmate Learning Web</div>
+                    <div class="project-progress">
+                        <div class="progress-fill" style="width: 27.2%;"></div>
+                    </div>
+                    <div class="percentage">27.2% • 11h 12m</div>
+                </div>
+                <div class="project-time">11h 12m</div>
+            </div>
+            <div class="project-item">
+                <div>
+                    <div class="project-name">Alkaa Frontend</div>
+                    <div class="project-progress">
+                        <div class="progress-fill" style="width: 26.5%;"></div>
+                    </div>
+                    <div class="percentage">26.5% • 10h 58m</div>
+                </div>
+                <div class="project-time">10h 58m</div>
+            </div>
+            <div class="project-item">
+                <div>
+                    <div class="project-name">Alkaa Backend</div>
+                    <div class="project-progress">
+                        <div class="progress-fill" style="width: 24.0%;"></div>
+                    </div>
+                    <div class="percentage">24.0% • 9h 54m</div>
+                </div>
+                <div class="project-time">9h 54m</div>
+            </div>
+            <div class="project-item">
+                <div>
+                    <div class="project-name">Sapmate Main Website</div>
+                    <div class="project-progress">
+                        <div class="progress-fill" style="width: 4.9%;"></div>
+                    </div>
+                    <div class="percentage">4.9% • 2h 00m</div>
+                </div>
+                <div class="project-time">2h 00m</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
